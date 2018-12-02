@@ -5,24 +5,16 @@
 
 (def codes (str/split-lines raw-input))
 
-(defn inc-or-one
-  [v] (if (nil? v) 1 (inc v)))
-
-(defn val-counts
-  "Given a collection return a map of the vals to their occurrence count"
-  [s]
-  (reduce #(update %1 %2 inc-or-one) (sorted-map) s))
-
-(defn repeat-counts
-  [m] (filter #(> % 1) (set (vals m))))
+(defn unique-frequencies
+  [c] (into [] (set (vals (frequencies c)))))
 
 (def answer-part-a
-  (delay (let [char-counts (map #(repeat-counts (val-counts %)) codes)
-               sum-counts (val-counts (flatten char-counts))]
+  (delay (let [char-counts (map unique-frequencies codes)
+               sum-counts (frequencies (flatten char-counts))]
            (* (get sum-counts 2) (get sum-counts 3)))))
 
 (defn different-by-one?
-  [a b] (= 1 (count (filter identity (map not= a b)))))
+  [a b] (= 1 (get (frequencies (map = a b)) false)))
 
 (defn find-adjacent
   ([] nil)
@@ -31,20 +23,24 @@
                   [a b]
                   nil)))
 
-(defn process
-  [list]
-  (loop [rem list]
-    (let [v (apply find-adjacent rem)]
-      (if (nil? v)
-        (recur (rest rem))
-        v))))
+(defn search
+  "Starting at the beggining of the collection, pass the remander of the list to the provided
+   function until it returns a non-nil result. Returns the result (if any)"
+  [f col]
+  (loop [remaining col]
+    (if (empty? remaining)
+      nil
+      (let [result (apply f remaining)]
+        (if (nil? result)
+          (recur (rest remaining))
+          result)))))
 
-(defn keep-same
+(defn keep-if-same
   [a b] (if (= a b) a nil))
 
 (def answer-part-b
   (delay
-   (let [[code-a code-b] (process (sort codes))]
+   (let [[code-a code-b] (search find-adjacent (sort codes))]
      (apply str
             (filter char?
-                    (map keep-same code-a code-b))))))
+                    (map keep-if-same code-a code-b))))))

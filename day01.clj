@@ -11,15 +11,13 @@
 
 (def frequencies (reductions + numbers-on-loop))
 
+(defn is-big-int [n] (= (type n) clojure.lang.BigInt))
+
 (defn find-repeated-number [numbers]
-  (let [seen (java.util.HashSet.)
-        f (fn [remaining]
-            (let [[head & tail] remaining]
-              (if (.contains seen head)
-                head
-                (do
-                  (.add seen head)
-                  (recur tail)))))]
-    (f numbers)))
+  (let [find-repeat-reducer (fn [set v]
+                              (if (contains? set v) v (conj set v)))]
+    (take 1
+          (filter is-big-int
+                  (reductions find-repeat-reducer (sorted-set) numbers)))))
 
 (def answer-part-b (delay (find-repeated-number frequencies)))

@@ -5,20 +5,21 @@
 
 (def numbers (map bigint (str/split-lines raw-input)))
 
-(def answer-part-a (reduce + numbers))
+(def answer-part-a (delay (reduce + numbers)))
 
 (def numbers-on-loop (flatten (repeat numbers)))
 
 (def frequencies (reductions + numbers-on-loop))
 
-(defn find-repeated-number []
-  (let [seen (java.util.HashSet.)]
-    (fn [numbers]
-      (let [[head & tail] numbers]
-        (if (.contains seen head)
-          head
-          (do
-            (.add seen head)
-            (recur tail)))))))
+(defn find-repeated-number [numbers]
+  (let [seen (java.util.HashSet.)
+        f (fn [remaining]
+            (let [[head & tail] remaining]
+              (if (.contains seen head)
+                head
+                (do
+                  (.add seen head)
+                  (recur tail)))))]
+    (f numbers)))
 
-(def answer-part-b ((find-repeated-number) frequencies))
+(def answer-part-b (delay (find-repeated-number frequencies)))

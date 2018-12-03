@@ -4,3 +4,4 @@
 
 (require 'day01)
 (require 'day02)
+(require 'day03)

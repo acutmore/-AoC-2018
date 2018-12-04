@@ -42,3 +42,26 @@
 
 (def answer-part-a
   (delay (count (set (mapcat overlaps (tails (map parse-order orders)))))))
+
+(def all-ids (reduce conj #{} (map #(:id (parse-order %)) orders)))
+
+(defn overlap-ids
+  [{ida :id, xa :x, ya :y, wa :width, ha :height}
+   {idb :id, xb :x, yb :y, wb :width, hb :height}]
+  (let [[start end] (overlap-1d xa wa xb wb)
+        [start2 end2] (overlap-1d ya ha yb hb)]
+    (for [e1 (range start end)
+          e2 (range start2 end2)]
+      [ida idb])))
+
+(defn all-overlap-ids
+  [c]
+  (let [[v & col] c]
+    (mapcat #(overlap-ids v %) col)))
+
+(def answer-part-b
+  (delay
+   (reduce disj all-ids
+           (flatten
+            (mapcat all-overlap-ids
+                    (tails (map parse-order orders)))))))

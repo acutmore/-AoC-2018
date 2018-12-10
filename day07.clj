@@ -21,18 +21,21 @@
   [coll elm]
   (some #(= elm %) coll))
 
+(defn ready?
+  [active-steps step-dep]
+  (let [remaining (filter #(not (in? active-steps %)) (second step-dep))]
+    (empty? remaining)))
+
 (def answer-part-a
   (delay
-   (loop [order []
-          step-states (reduce #(update %1 (:step %2) conj (:dependency-step %2)) alpha deps)]
-     (let [next (first
-                 (sort
-                  (filter #(not (in? order %))
-                          (map first
-                               (filter #(empty?
-                                         (filter (fn [x] (not (in? order x)))
-                                                 (second %))) step-states)))))]
-       (if (nil? next)
-         order
-         (recur (conj order next) step-states))))))
-
+   (let [step-deps (reduce #(update %1 (:step %2) conj (:dependency-step %2)) alpha deps)]
+     (loop [order []]
+       (let [next (->> step-deps
+                       (filter (partial ready? order))
+                       (map first)
+                       (filter #(not (in? order %)))
+                       (sort)
+                       (first))]
+         (if (nil? next)
+           (str/join "" order)
+           (recur (conj order next))))))))

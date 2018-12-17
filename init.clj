@@ -6,3 +6,4 @@
 (require 'day02)
 (require 'day03)
 (require 'day07)
+(require 'day16)
